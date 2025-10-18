@@ -85,7 +85,7 @@ BuildRequires: pkgconfig(zlib)
 ###
 BuildRequires: pkgconfig(Qt6Location)
 #BuildRequires: qt6-qtmultimedia-devel
-#BuildRequires: kf6-kfilemetadata-devel
+BuildRequires: kf6-kfilemetadata-devel
 #BuildRequires: kf6-kio-devel
 BuildRequires: kf6-kitemmodels-devel
 
