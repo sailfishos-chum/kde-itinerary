@@ -205,7 +205,8 @@ done
 %{_kf6_datadir}/qlogging-categories6/*.categories
 
 %{_kf6_qmldir}/org/kde/solidextras/*
+%{_kf6_plugindir}/kfilemetadata/kfilemetadata_itineraryextractor.so
 
 # do we need these?
 %{_kf6_libdir}/libSolidExtras.so
-%{_kf6_metainfodir}/org.kde.itinerary.appdata.xml
+%exclude %{_kf6_metainfodir}/org.kde.itinerary.appdata.xml
