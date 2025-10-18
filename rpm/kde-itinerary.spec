@@ -2,6 +2,8 @@
 %global  kf6_version 6.18.0
 %define _metainfodir /usr/share/metainfo
 
+%bcond_with vulkan
+
 Name:       kde-itinerary
 # Newer versions contain commit dd4a6203, which forces KPublicTransport 25.07.71 which we can't compile.
 # See the KPublicTransport package for details.
@@ -99,6 +101,11 @@ BuildRequires: kde-kmime-devel
 BuildRequires: kf6-kconfig-devel
 ## Required by KF6CoreAddons
 BuildRequires: kf6-kcodecs-devel
+
+%if %{with vulkan}
+BuildRequires: vulkan-headers
+Recommends:    vulkan
+%endif
 
 
 # Optional:
