@@ -1,6 +1,5 @@
 %global  kde_version 25.04.3
 %global  kf6_version 6.18.0
-%global pkgname itinerary
 %define _metainfodir /usr/share/metainfo
 
 Name:       kde-itinerary
@@ -12,7 +11,7 @@ License:    Apache-2.0 and BSD-3-Clause and CC0-1.0 and LGPL-2.0-or-later
 Summary:    Digital travel assistant with a priority on protecting your privacy
 Url:        https://apps.kde.org/itinerary/
 #Source0:    https://invent.kde.org/pim/%%{name}/-/archive/v%%{version}/%%{name}-v%%{version}.tar.bz2
-Source0:    %{pkgname}-v%{version}.tar.bz2
+Source0:    %{name}-%{version}.tar.bz2
 
 
 BuildRequires: desktop-file-utils
@@ -118,18 +117,19 @@ BuildRequires: kf6-kcodecs-devel
 # * QML module 'org.kde.prison' is a runtime dependency.
 # * QML module 'org.kde.prison.scanner' is a runtime dependency.
 
-Requires:   qt-runner
+Requires:   qt-runner-qt6
 Requires:   kf6-kirigami
 Requires:   kf6-prison
 Requires:   kf6-kitemmodels
 Requires:   kf6-qqc2-desktop-style
 Recommends: qt6-qtlocation
+Recommends: qt6-qtpositioning
 
 %description
 KDE Itinerary is a digital travel assistant with a priority on protecting
 your privacy.
 
-%if "%{?vendor}" == "chum"
+%if "0%{?_chum}"
 Title: KDE Itinerary
 Type: desktop-application
 PackagedBy: nephros
@@ -149,7 +149,7 @@ Links:
 
 
 %prep
-%autosetup -p1 -n %{pkgname}-%{version}/upstream
+%autosetup -p1 -n %{name}-%{version}/upstream
 
 %build
 %cmake_kf6
