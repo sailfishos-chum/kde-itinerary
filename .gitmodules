@@ -1,0 +1,4 @@
+[submodule "upstream"]
+	path = upstream
+	url = https://invent.kde.org/pim/itinerary
+	branch = v25.04.3
