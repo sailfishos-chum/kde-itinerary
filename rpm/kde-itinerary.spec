@@ -13,12 +13,13 @@ Url:        https://apps.kde.org/itinerary/
 #Source0:    https://invent.kde.org/pim/%%{name}/-/archive/v%%{version}/%%{name}-v%%{version}.tar.bz2
 Source0:    %{name}-%{version}.tar.bz2
 
+Patch0:     0000-build-for-sailfishos.patch
 
 BuildRequires: desktop-file-utils
 BuildRequires: kf6-extra-cmake-modules >= %kf6_version
 BuildRequires: gcc-c++
 BuildRequires: kf6-rpm-macros
-BuildRequires: kf6-qqc2-desktop-style
+#BuildRequires: kf6-qqc2-desktop-style
 BuildRequires: kf6-qqc2-breeze-style
 
 BuildRequires: pkgconfig(Qt6Core)
@@ -52,6 +53,10 @@ BuildRequires: kf6-kunitconversion-devel
 
 # find_package(KF6KirigamiAddons 0.11.40 REQUIRED)
 BuildRequires: kf6-kirigami-addons-devel
+
+# Patched for Android/mobile
+BuildRequires: kf6-kirigami-devel
+BuildRequires: kf6-kcolorscheme-devel
 
 # find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS DBusAddons QQC2DesktopStyle WindowSystem)
 BuildRequires: kf6-kdbusaddons-devel
@@ -152,7 +157,10 @@ Links:
 %autosetup -p1 -n %{name}-%{version}/upstream
 
 %build
-%cmake_kf6
+%cmake_kf6 \
+  -DSAILFISHOS=ON \
+  %{nil}
+
 %cmake_build
 
 %install

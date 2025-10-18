@@ -1,0 +1,113 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7674e4a9e..94bc2826c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -15,6 +15,8 @@ set(KF_MIN_VERSION 6.11)
+ set(GEAR_MIN_VERSION 25.03)
+ set(PIM_MIN_VERSION 6.2)
+ 
++option(SAILFISHOS "Build for Sailfish OS" OFF)
++
+ find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
+ set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+ 
+@@ -85,6 +87,11 @@ ecm_find_qmlmodule(org.kde.prison.scanner ${KF_MIN_VERSION})
+ ecm_find_qmlmodule(org.kde.kosmindoormap ${GEAR_MIN_VERSION} REQUIRED)
+ ecm_find_qmlmodule(org.kde.kopeninghours ${GEAR_MIN_VERSION} REQUIRED)
+ 
++
++if (SAILFISHOS)
++    add_compile_definitions(Q_OS_SAILFISH)
++endif()
++
+ # runtime dependencies are build-time dependencies on Android
+ if (ANDROID)
+     find_package(Qt6 REQUIRED COMPONENTS Svg)
+@@ -96,9 +103,17 @@ if (ANDROID)
+     find_package(Gradle REQUIRED)
+     set_package_properties(LibIcal PROPERTIES TYPE REQUIRED)
+ else()
+-    find_package(Qt6 REQUIRED COMPONENTS Widgets DBus)
+-    find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS DBusAddons QQC2DesktopStyle WindowSystem)
+-    find_package(KF6 ${KF_MIN_VERSION} OPTIONAL_COMPONENTS Solid Crash FileMetaData KIO)
++    if (SAILFISHOS) # Mix of Android and desktop
++        find_package(Qt6 REQUIRED COMPONENTS DBus)
++        find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS ColorScheme Kirigami Prison)
++        find_package(KF6 ${KF_MIN_VERSION} OPTIONAL_COMPONENTS Archive)
++        find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS DBusAddons WindowSystem)
++        find_package(KF6 ${KF_MIN_VERSION} OPTIONAL_COMPONENTS Solid FileMetaData KIO)
++    else()
++        find_package(Qt6 REQUIRED COMPONENTS Widgets DBus)
++        find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS DBusAddons QQC2DesktopStyle WindowSystem)
++        find_package(KF6 ${KF_MIN_VERSION} OPTIONAL_COMPONENTS Solid Crash FileMetaData KIO)
++    endif()
+     find_package(SharedMimeInfo 1.0 REQUIRED)
+     set(HAVE_DBUS ON)
+ endif()
+diff --git a/src/app/CMakeLists.txt b/src/app/CMakeLists.txt
+index e9a389afd..8663c72a6 100644
+--- a/src/app/CMakeLists.txt
++++ b/src/app/CMakeLists.txt
+@@ -401,12 +401,20 @@ if (ANDROID)
+     ecm_add_android_apk(itinerary-app ANDROID_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android)
+     install(FILES sc-apps-org.kde.itinerary.svg  DESTINATION ${KDE_INSTALL_QMLDIR}/org/kde/kirigami/breeze-internal/icons/ RENAME org.kde.itinerary.svg)
+ else ()
+-    target_link_libraries(itinerary PRIVATE Qt::Positioning Qt::DBus Qt::Widgets)
+-    target_link_libraries(itinerary-app PRIVATE
+-        KF6::DBusAddons
+-        KF6::WindowSystem
+-        Qt::Widgets
+-    )
++    if (SAILFISHOS)
++        target_link_libraries(itinerary PRIVATE Qt::Positioning Qt::DBus)
++        target_link_libraries(itinerary-app PRIVATE
++            KF6::DBusAddons
++            KF6::WindowSystem
++        )
++    else ()
++        target_link_libraries(itinerary PRIVATE Qt::Positioning Qt::DBus Qt::Widgets)
++        target_link_libraries(itinerary-app PRIVATE
++            KF6::DBusAddons
++            KF6::WindowSystem
++            Qt::Widgets
++        )
++    endif()
+     set_target_properties(itinerary-app PROPERTIES OUTPUT_NAME "itinerary")
+     ecm_install_icons(ICONS sc-apps-org.kde.itinerary.svg DESTINATION ${KDE_INSTALL_ICONDIR})
+ endif()
+diff --git a/src/app/main.cpp b/src/app/main.cpp
+index 1bb234235..ccf6f823c 100644
+--- a/src/app/main.cpp
++++ b/src/app/main.cpp
+@@ -101,8 +101,10 @@
+ #include "kandroidextras/activity.h"
+ #include "kandroidextras/intent.h"
+ #else
++#ifndef Q_OS_SAILFISH
+ #include <QApplication>
+ #endif
++#endif
+ 
+ #include <QCommandLineParser>
+ #include <QDebug>
+@@ -311,12 +313,20 @@ int main(int argc, char **argv)
+     KColorSchemeManager::instance(); // enables automatic dark mode handling
+ #else
+     QIcon::setFallbackThemeName(QStringLiteral("breeze"));
++#ifdef Q_OS_SAILFISH
++    QGuiApplication app(argc, argv);
++    // Default to org.kde.desktop style unless the user forces another style
++    if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
++        QQuickStyle::setStyle(QStringLiteral("org.kde.breeze"));
++    }
++#else
+     QApplication app(argc, argv); // for native file dialogs
+ 
+     // Default to org.kde.desktop style unless the user forces another style
+     if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
+         QQuickStyle::setStyle(QStringLiteral("org.kde.desktop"));
+     }
++#endif
+ #endif
+     QGuiApplication::setApplicationDisplayName(i18n("KDE Itinerary"));
+     QGuiApplication::setWindowIcon(QIcon::fromTheme(QStringLiteral("org.kde.itinerary")));
