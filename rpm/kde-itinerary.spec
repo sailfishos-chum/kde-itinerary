@@ -14,6 +14,7 @@ Summary:    Digital travel assistant with a priority on protecting your privacy
 Url:        https://apps.kde.org/itinerary/
 #Source0:    https://invent.kde.org/pim/%%{name}/-/archive/v%%{version}/%%{name}-v%%{version}.tar.bz2
 Source0:    %{name}-%{version}.tar.bz2
+Source1:    org.kde.itinerary.svg
 
 Patch0:     0000-build-for-sailfishos.patch
 
@@ -187,7 +188,9 @@ desktop-file-install --delete-original       \
    %{buildroot}%{_datadir}/applications/*.desktop
 
 # generate some icons
-for size in 86 108 128 172 256 512 1024; do
+rm -f %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/*svg
+install -Dpm644 -t %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/ %{S:1}
+for size in 86 108 128 172 256 512; do
 install -d %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/
 sailfish_svg2png -z 1.0 -s 1 1 1 1 1 1 ${size} %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/ %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/
 done
